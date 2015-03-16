@@ -16,13 +16,13 @@ public class basicAI : MonoBehaviour {
 	}
 
 	Rigidbody Fire (Vector3 point) {
-		Rigidbody bulletInstance = Instantiate( bullet, rigidbody.transform.position, rigidbody.transform.rotation) as Rigidbody;
+		Rigidbody bulletInstance = Instantiate( bullet, GetComponent<Rigidbody>().transform.position, GetComponent<Rigidbody>().transform.rotation) as Rigidbody;
 		bulletInstance.AddForce (point * bulletSpeed);
 		return bulletInstance;
 	}
 
 	void Aim (Rigidbody target) {
-		Vector3 currentPosition = rigidbody.transform.position;
+		Vector3 currentPosition = GetComponent<Rigidbody>().transform.position;
 		Vector3 targetVelocity = target.GetRelativePointVelocity (currentPosition);
 		aimedPoint = (target.position + targetVelocity) * bulletSpeed;
 

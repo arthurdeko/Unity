@@ -10,8 +10,8 @@ public class Aimer : MonoBehaviour {
 	public Text hitDisplay;
 	public Text missDisplay;
 	public Text ratioDisplay;
-	
-	public float scanRate = 20f;
+	public Transform bulletMark;
+	public float maxShots = 100;
 
 	private float fired = 0;
 	private float hitCount = 0;
@@ -19,45 +19,53 @@ public class Aimer : MonoBehaviour {
 	private float ratio = 0;
 
 	void Start () {
-
 		firedDisplay.text = "0";
+		StartCoroutine ("Gun");
 	}
 
-	private RaycastHit isHit() {
+	void FireGun() {
+        if ( fired > maxShots ) {
+			Application.LoadLevel("g");
+		}
+		GetComponent<AudioSource>().Play ();
+		Core.HideCursor ();		
+		fired++;
+		firedDisplay.text = fired.ToString ();
+
 		Vector3 fwd = transform.TransformDirection(Vector3.forward);
 		RaycastHit hit;
-		Physics.Raycast (transform.position, fwd, out hit);
-		return hit;
-	}
-
-	// Update is called once per frame
-	void Update () {
-		RaycastHit hit = isHit ();
-		if (Input.GetMouseButtonDown(mouseButton) ) {
-			fired++;
-			firedDisplay.text = fired.ToString();
-
-			//stats.updateScore();
-			if ( Screen.showCursor )
-			{
-				Screen.showCursor = false;
-			}
-			if ( hit.collider.tag == "Target" ) {
+		if ( Physics.Raycast (transform.position, fwd, out hit) ) {
+			if (hit.collider.tag == "Target") {
 				hitCount++;
-				hitDisplay.text = hitCount.ToString();
-				hit.collider.rigidbody.AddForceAtPosition (new Vector3(0,0,-bulletSpeed), hit.point);
-			} else {
-				miss++;
-				missDisplay.text = miss.ToString();
+				hitDisplay.text = hitCount.ToString ();
+				hit.collider.GetComponent<Rigidbody>().AddForceAtPosition (-hit.collider.transform.forward * bulletSpeed, hit.point);
+				
 			}
-			ratio = (hitCount / fired) * 100;
-			ratioDisplay.text = ratio + " %";
-
+		} else {
+			miss++;
+			missDisplay.text = miss.ToString ();
 		}
+		
+		ratio = (hitCount / fired) * 100;
+		ratioDisplay.text = ratio + " %";
+		
+		
+	}
+	
+	IEnumerator Gun() {
+		while (transform.position.y < 100000) {
 
-		if (Input.GetMouseButtonDown (1)) {
-			Screen.showCursor = true;
+			if (Input.GetMouseButtonDown (mouseButton)) {
+				FireGun();
+			}
+
+			if (Input.GetMouseButtonDown (1)) {
+					Core.UnhideCursor ();
+			}
+
+			yield return null;
 		}
+		yield return null;
 
 	}
 
